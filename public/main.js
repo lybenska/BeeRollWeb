@@ -98,9 +98,8 @@
   var runTrack = $('#run-track');
   var clips = $$('.clip', runTrack);
   var rulerMarks = $$('.run-ruler span', run);
-  var wide = window.matchMedia('(min-width: 1081px)');
   function runScroll() {
-    if (!wide.matches || reduced) { runTrack.style.transform = ''; return; }
+    if (reduced) { runTrack.style.transform = ''; return; }
     var r = run.getBoundingClientRect();
     var span = run.offsetHeight - window.innerHeight;
     var p = Math.min(1, Math.max(0, -r.top / span));

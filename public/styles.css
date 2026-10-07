@@ -98,15 +98,15 @@ p { margin: 0; text-wrap: pretty; }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* ── The run ─────────────────────────────────────────────── */
-.run { padding: 0; height: calc(var(--clips) * 55vh + 100vh); }
+.run { --clip-w: 560px; padding: 0; height: calc(var(--clips) * 55vh + 100vh); }
 .run.band > .run-pin { position: sticky; top: var(--nav-h); height: calc(100vh - var(--nav-h)); display: flex; flex-direction: column; justify-content: center; gap: 36px; padding: 0 var(--pad); overflow: hidden; }
 .run-head { text-align: center; }
 .run-ruler { position: relative; display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--dim-2); font-variant-numeric: tabular-nums; }
 .run-ruler::after { content: ''; position: absolute; left: 0; bottom: -1px; height: 1px; width: calc(var(--p, 0) * 100%); background: var(--honey); }
 .run-ruler span.is-on { color: var(--honey); }
 .run-view { position: relative; margin: 0 calc(-1 * var(--pad)); }
-.run-track { display: flex; gap: 40px; margin: 0; padding: 0 calc(50% - 280px); list-style: none; will-change: transform; }
-.clip { flex: 0 0 560px; opacity: .35; transform: scale(.94); transition: opacity .4s, transform .4s; }
+.run-track { display: flex; gap: 40px; margin: 0; padding: 0 calc(50% - var(--clip-w) / 2); list-style: none; will-change: transform; }
+.clip { flex: 0 0 var(--clip-w); opacity: .35; transform: scale(.94); transition: opacity .4s, transform .4s; }
 .clip.is-on { opacity: 1; transform: none; }
 .clip-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 11px; letter-spacing: .14em; color: var(--dim); font-variant-numeric: tabular-nums; }
 .clip-lane { margin-left: auto; color: var(--text); font-weight: 500; }
@@ -411,12 +411,10 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 200; pointer-even
   .gen .sec-head, .mon .sec-head { margin: 0 auto; text-align: center; }
   .ticks { justify-content: center; text-align: left; }
   .cr-grid { grid-template-columns: 1fr; }
-  .run { height: auto; padding: 0 var(--pad); }
-  .run.band > .run-pin { position: relative; height: auto; padding: 104px 0; overflow: visible; gap: 48px; }
-  .run-ruler { display: none; }
-  .run-view { margin: 0; }
-  .run-track { flex-direction: column; gap: 56px; padding: 0; transform: none !important; max-width: 560px; margin: 0 auto; }
-  .clip { flex: none; opacity: 1; transform: none; }
+  /* The run stays pinned and scroll-driven here too; the clip narrows to the screen. */
+  .run { --clip-w: min(560px, calc(100vw - 2 * var(--pad) - 32px)); }
+  .run.band > .run-pin { height: calc(100svh - var(--nav-h)); gap: 28px; }
+  .run-track { gap: 20px; }
   .sa-steps { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; gap: 40px; }
   .get-card { margin-top: 72px; }
   .get-app { grid-template-columns: auto 1fr; padding: 24px; }
@@ -436,7 +434,11 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 200; pointer-even
   .hero-shot { transform: none; border-radius: 10px; }
   .chip { letter-spacing: .08em; font-size: 11px; }
   .section { padding-top: 80px; padding-bottom: 80px; }
-  .run.band > .run-pin { padding: 80px 0; }
+  .run-ruler { font-size: 9px; letter-spacing: 0; }
+  .tl-names { font-size: 8px; letter-spacing: .04em; }
+  .tl-names li { left: 8px; right: 4px; flex-wrap: nowrap; gap: 5px; white-space: nowrap; }
+  .tl-names small { display: none; }
+  .run.band > .run-pin { gap: 22px; }
   .gp { padding: 20px; }
   .gp-cost b { font-size: 36px; }
   .tx-head { padding: 14px 16px; }
@@ -487,4 +489,14 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 200; pointer-even
   .dm { grid-template-columns: repeat(5, 3px); grid-auto-rows: 3px; gap: 2px; }
   .dm i { width: 3px; height: 3px; }
   .nav-links a.dm-link { display: flex; gap: 14px; }
+}
+
+/* Reduced motion on a narrow screen: no pinned scroll, the clips simply stack. */
+@media (max-width: 1080px) and (prefers-reduced-motion: reduce) {
+  .run { height: auto; padding: 0 var(--pad); }
+  .run.band > .run-pin { position: relative; height: auto; padding: 104px 0; overflow: visible; gap: 48px; }
+  .run-ruler { display: none; }
+  .run-view { margin: 0; }
+  .run-track { flex-direction: column; gap: 56px; padding: 0; transform: none !important; max-width: 560px; margin: 0 auto; }
+  .clip { flex: none; opacity: 1; transform: none; }
 }
