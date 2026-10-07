@@ -1,0 +1,290 @@
+---
+// BeeRoll — light version of the landing, side by side with the dark one at /.
+// Same content and claims (src/data.ts). The look follows the instrument-panel references: a flat light grey,
+// hairlines, small mono labels, big light numerals, dials and gauges, one dot-matrix picture, honey only as a signal.
+// How it works is a dial: the steps sit on an arc that turns as the page scrolls (after Polyera's Wove).
+import { TRY_URL, APP_PAGE_URL, CREDITS_URL, SITE_URL } from '../consts';
+import { title, description, ogTitle, ogImage, heroVariants, run, capPresets, models, egress, faqs } from '../data';
+
+// Gauge ticks for the credit estimate: a half circle, 0 to 4,000 credits (Veo 3.1 at 8 s, the dearest take).
+const GAUGE_MAX = 4000;
+const ticks = Array.from({ length: 41 }, (_, i) => {
+  const a = Math.PI * (1 - i / 40), long = i % 10 === 0, r1 = long ? 78 : 84;
+  return { x1: 100 + Math.cos(a) * r1, y1: 100 - Math.sin(a) * r1, x2: 100 + Math.cos(a) * 92, y2: 100 - Math.sin(a) * 92, long };
+});
+const gaugeLabels = [0, 1000, 2000, 3000, 4000].map((v, i) => {
+  const a = Math.PI * (1 - i / 4);
+  return { v: v ? `${v / 1000}k` : '0', x: 100 + Math.cos(a) * 66, y: 100 - Math.sin(a) * 66 + 3 };
+});
+
+// Privacy as four readouts: a figure and what it measures.
+const readouts = egress.map((e) => ({ ...e, big: e.sent === '0 B' ? '0 B' : e.state === 'o' ? 'On demand' : 'Optional' }));
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<!-- A design variant of /: kept out of search so the two never compete. -->
+<meta name="robots" content="noindex" />
+<link rel="canonical" href={`${SITE_URL}/`} />
+<link rel="icon" type="image/png" href="/assets/icon-32.png" />
+<link rel="apple-touch-icon" href="/assets/icon.png" />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta name="theme-color" content="#ECECEA" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&family=Geist+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="/light.css" />
+</head>
+<body>
+
+<header class="bar">
+  <a class="mark" href="#top" aria-label="BeeRoll home"><img src="/assets/icon.png" width="24" height="24" alt="" />BeeRoll</a>
+  <nav class="bar-links" aria-label="Page sections">
+    <a href="#how">How it works</a>
+    <a href="#captions">Captions</a>
+    <a href="#broll">B-roll</a>
+    <a href="#credits">AI credits</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <a class="pill pill-sm" href={TRY_URL}><i></i>Try free</a>
+</header>
+
+<main id="top">
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="meta-row" aria-hidden="true"><span>BR—01</span><span>Transcript video editor</span><span>[+]</span><span>macOS 26</span><span>00:00:00:00</span></div>
+  <div class="hero-grid">
+    <h1><span id="hero-l1">Edit the words.</span> <span class="dim" id="hero-l2">The video follows.</span></h1>
+    <div class="hero-side">
+      <p class="lede" id="hero-sub">Transcribe on your Mac. Delete a sentence, its frames go too.</p>
+      <a class="pill" id="hero-cta" href={TRY_URL}><i></i>Try BeeRoll free</a>
+      <p class="label">Free on Setapp · macOS 26 or later</p>
+    </div>
+  </div>
+  <figure class="dots-fig">
+    <canvas class="dots" id="dots" data-src="/assets/app/lab-clean.jpg" aria-hidden="true"></canvas>
+    <figcaption class="label"><span>Fig. 01</span><span>A generated shot, 0:04</span><span>“Create a video about Saturn”</span></figcaption>
+  </figure>
+</section>
+
+<!-- ═══ THE EDITOR ═══ -->
+<section class="editor">
+  <div class="sec-top"><span class="label">01 — The editor</span><span class="label">Transcript · Preview · Timeline</span></div>
+  <figure class="shot">
+    <img src="/assets/app/editor.jpg" width="2200" height="1375" alt="BeeRoll's editor: the transcript, a generated shot of Saturn with a caption on the picture, the Generate panel and the timeline" loading="lazy" decoding="async" />
+  </figure>
+</section>
+
+<!-- ═══ HOW IT WORKS: a dial ═══ -->
+<section class="how" id="how" style={`--n:${run.length}`}>
+  <div class="how-pin">
+    <div class="sec-top"><span class="label">02 — How it works</span><span class="label">One video, start to finish</span></div>
+    <div class="how-body">
+      <div class="dial" aria-hidden="true">
+        <div class="dial-ring" id="dial-ring">
+          {run.map((c, i) => <span class="dial-n" style={`--i:${i}`}><b>{String(i + 1).padStart(2, '0')}</b></span>)}
+          {run.map((c, i) => <i class="dial-dot" style={`--i:${i}`}></i>)}
+        </div>
+      </div>
+      <ol class="how-steps">
+        {run.map((c, i) => (
+          <li class="how-step" data-i={i}>
+            <span class="how-num">{String(i + 1).padStart(2, '0')}</span>
+            <div class="how-text">
+              <p class="label">{c.tc} · {c.lane}</p>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
+            </div>
+            <figure class="how-pic">
+              {c.tracks ? (
+                <div class="tl-wrap">
+                  <ul class="tl-names" aria-hidden="true">{c.tracks.map(([t, w]) => <li>{t}<small>{w}</small></li>)}</ul>
+                  <img src={`/assets/app/${c.img}.jpg`} alt={c.alt} width="918" height="410" loading="lazy" decoding="async" />
+                </div>
+              ) : (
+                <img src={`/assets/app/${c.img}.jpg`} alt={c.alt} width={c.size?.[0] ?? 1440} height={c.size?.[1] ?? 900} loading="lazy" decoding="async" />
+              )}
+            </figure>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CAPTIONS ═══ -->
+<section class="caps" id="captions">
+  <div class="sec-top"><span class="label">03 — Captions</span><span class="label">3 presets</span></div>
+  <form class="caps-grid" onsubmit="return false" aria-label="Caption preset">
+    <div class="sec-copy">
+      <h2>Captions, <span class="dim">already typed.</span></h2>
+      <p class="lede">Pick a look. These are real frames from BeeRoll.</p>
+      <div class="radios">
+        {capPresets.map(([v, l], i) => <label><input type="radio" name="preset" value={v} checked={i === 0} /><span>{l}</span></label>)}
+      </div>
+    </div>
+    <div class="shot caps-shot">
+      {capPresets.map(([v, l]) => <img class={`cap-img cap-${v}`} src={`/assets/app/lab-${v}.jpg`} width="1400" height="786" alt={`A generated shot of Saturn in BeeRoll with the ${l} caption preset`} loading="lazy" decoding="async" />)}
+    </div>
+  </form>
+</section>
+
+<!-- ═══ B-ROLL ═══ -->
+<section class="broll" id="broll">
+  <div class="sec-top"><span class="label">04 — B-roll</span><span class="label">Text to video</span></div>
+  <div class="broll-grid">
+    <div class="sec-copy">
+      <h2>Missing a shot? <span class="dim">Describe it.</span></h2>
+      <p class="lede">BeeRoll generates it to fit your project. Drop it on the timeline.</p>
+      <ul class="list">
+        <li>Starts only when you press Generate</li>
+        <li>Cost shown before you spend</li>
+        <li>Labeled as AI-made on export</li>
+      </ul>
+    </div>
+    <figure class="tile broll-tile">
+      <img src="/assets/app/generate.jpg" width="601" height="1008" alt="BeeRoll's Generate panel: AI credits balance, shot description, look, model, aspect and duration" loading="lazy" decoding="async" />
+    </figure>
+  </div>
+</section>
+
+<!-- ═══ AI CREDITS: a gauge ═══ -->
+<section class="credits" id="credits">
+  <div class="sec-top"><span class="label">05 — AI credits</span><span class="label">Setapp AI+</span></div>
+  <div class="credits-grid">
+    <div class="sec-copy">
+      <h2>Free to edit. <span class="dim">Credits to generate.</span></h2>
+      <p class="lede">AI credits come with Setapp Membership, or you can buy them separately.</p>
+      <ol class="list list-n">
+        <li>Your balance is on the Generate panel.</li>
+        <li>Running low? Get credits opens Setapp.</li>
+        <li>Out mid-take? Your project stays intact.</li>
+      </ol>
+      <a class="link" href={CREDITS_URL} target="_blank" rel="noopener">Get AI credits ↗</a>
+    </div>
+    <div class="tiles">
+      <div class="tile disc-tile">
+        <div class="disc"><p class="label">To edit</p><p class="disc-n">0</p><p class="label">credits</p></div>
+        <p class="note">Transcripts, cuts, captions, titles and export never use credits.</p>
+      </div>
+      <form class="tile gauge" id="calc" onsubmit="return false" aria-label="Estimate what a shot costs">
+        <div class="tile-top"><span class="label">A shot costs about</span><span class="label">Credits</span></div>
+        <div class="gauge-face">
+          <svg class="gauge-svg" viewBox="0 0 200 108" aria-hidden="true">
+            {ticks.map((t) => <line x1={t.x1.toFixed(2)} y1={t.y1.toFixed(2)} x2={t.x2.toFixed(2)} y2={t.y2.toFixed(2)} class={t.long ? 'long' : undefined} />)}
+            {gaugeLabels.map((l) => <text x={l.x.toFixed(1)} y={l.y.toFixed(1)}>{l.v}</text>)}
+            <g class="needle" id="needle"><line x1="100" y1="100" x2="100" y2="26" /><circle cx="100" cy="100" r="4" /></g>
+          </svg>
+          <output class="gauge-n" id="calc-cost" for="calc" aria-live="polite" data-max={GAUGE_MAX}>500</output>
+        </div>
+        <fieldset class="seg"><legend class="label">Model</legend>{models.map((m, i) => <label><input type="radio" name="model" value={m.id} checked={i === 0} data-rate={m.rate} data-lengths={m.lengths.join(',')} /><span>{m.name}</span></label>)}</fieldset>
+        <fieldset class="seg"><legend class="label">Length</legend>{[4, 8, 12].map((s, i) => <label><input type="radio" name="length" value={s} checked={i === 0} /><span>{s} s</span></label>)}</fieldset>
+        <p class="note">From rates measured in BeeRoll. The app shows the exact estimate.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRIVACY: four readouts ═══ -->
+<section class="privacy" id="privacy">
+  <div class="sec-top"><span class="label">06 — Privacy</span><span class="label">What leaves your Mac</span></div>
+  <h2>Your video stays <span class="dim">on your Mac.</span></h2>
+  <ul class="readouts" aria-label="What BeeRoll sends off your Mac">
+    {readouts.map((r) => (
+      <li class="tile">
+        <span class={`led led-${r.state}`} aria-hidden="true"></span>
+        <p class="readout-n">{r.big}</p>
+        <p class="readout-k">{r.what}</p>
+        {r.sent !== r.big && <p class="label">{r.sent}</p>}
+      </li>
+    ))}
+  </ul>
+</section>
+
+<!-- ═══ SETAPP ═══ -->
+<section class="setapp" id="setapp">
+  <div class="sec-top"><span class="label">07 — Free start</span><span class="label">Through Setapp</span></div>
+  <div class="sa-head">
+    <h2>Your free start <span class="dim">goes through Setapp.</span></h2>
+    <p class="lede">Setapp is MacPaw’s app platform. It installs and updates BeeRoll for you.</p>
+  </div>
+  <ol class="sa">
+    <li><span class="sa-n">01</span><div class="shot sa-pic is-white"><img src="/assets/shots/setapp-signup.png" width="1360" height="640" alt="Setapp sign-in page for BeeRoll: continue with Google, Apple, or email" loading="lazy" decoding="async" /></div><h3>Sign in or create an account</h3><p>Use Google, Apple or your email. New accounts are created on the spot.</p></li>
+    <li><span class="sa-n">02</span><div class="shot sa-pic"><img src="/assets/shots/setapp-home.webp" width="1600" height="973" alt="The Setapp app on a Mac" loading="lazy" decoding="async" /></div><h3>Install Setapp and BeeRoll</h3><p>Setapp downloads to your Mac and installs BeeRoll for you.</p></li>
+    <li><span class="sa-n">03</span><div class="shot sa-pic"><img src="/assets/app/run-import.jpg" width="1440" height="900" alt="BeeRoll's Media tab with imported videos" loading="lazy" decoding="async" /></div><h3>Open BeeRoll</h3><p>Drop in a video and press Transcribe.</p></li>
+  </ol>
+  <div class="get">
+    <div><p class="get-title">Free to install. <span class="dim">Free to edit.</span></p><p class="label">macOS 26 or later · English interface · 58.6 MB</p></div>
+    <ul class="list">
+      <li>Transcripts, cuts, captions, titles, export</li>
+      <li>Updates through Setapp</li>
+      <li class="o">AI shots use Setapp AI+ credits</li>
+    </ul>
+    <div class="get-act"><a class="pill" href={TRY_URL}><i></i>Try BeeRoll free</a><a class="link" href={APP_PAGE_URL} target="_blank" rel="noopener">See BeeRoll on Setapp ↗</a></div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq" id="faq">
+  <div class="sec-top"><span class="label">08 — FAQ</span><span class="label">{faqs.length} questions</span></div>
+  <div class="faq-list">
+    {faqs.map((f, i) => (
+      <details open={i === 0}>
+        <summary><span class="label">Q{String(i + 1).padStart(2, '0')}</span><span class="faq-q">{f.q}</span><i class="plus" aria-hidden="true"></i></summary>
+        <p>{f.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<!-- ═══ CLOSING ═══ -->
+<section class="closing">
+  <h2>Your next video is <span class="dim">already in the transcript.</span></h2>
+  <a class="pill" href={TRY_URL}><i></i>Try BeeRoll free</a>
+  <p class="label">Free on Setapp · macOS 26 or later</p>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot-grid">
+    <div class="foot-about">
+      <a class="mark" href="#top"><img src="/assets/icon.png" width="22" height="22" alt="" />BeeRoll</a>
+      <p>Edit video by editing its transcript. A Mac app by MacPaw.</p>
+    </div>
+    <nav aria-label="Product">
+      <p class="label">Product</p>
+      <a href="#how">How it works</a>
+      <a href="#captions">Captions</a>
+      <a href="#broll">B-roll</a>
+      <a href="#credits">AI credits</a>
+      <a href="#faq">FAQ</a>
+      <a href={APP_PAGE_URL} target="_blank" rel="noopener">BeeRoll on Setapp ↗</a>
+    </nav>
+    <nav aria-label="Company">
+      <p class="label">Company</p>
+      <a href="https://macpaw.com" target="_blank" rel="noopener">MacPaw ↗</a>
+      <a href="https://setapp.com" target="_blank" rel="noopener">Setapp ↗</a>
+      <a href="mailto:support@macpaw.com">Support</a>
+    </nav>
+    <nav aria-label="Legal">
+      <p class="label">Legal</p>
+      <a href="https://macpaw.com/legal/ai-apps-privacy-policy" target="_blank" rel="noopener">Privacy</a>
+      <a href="https://macpaw.com/legal/ai-apps-terms-of-service" target="_blank" rel="noopener">Terms</a>
+      <a href="https://macpaw.com/legal/ai-apps-product-specific-terms-of-service" target="_blank" rel="noopener">Product terms</a>
+    </nav>
+  </div>
+  <div class="foot-bottom label"><span>© 2026 MacPaw Way Ltd. All rights reserved.</span><span>[+] BR—01</span></div>
+</footer>
+
+<script is:inline set:html={`window.heroVariants = ${JSON.stringify(heroVariants)};`} />
+<script is:inline src="/light.js"></script>
+</body>
+</html>
